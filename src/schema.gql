@@ -1,0 +1,61 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Item {
+  """Unique identifier of the item"""
+  id: ID!
+
+  """Name of the item"""
+  name: String!
+
+  """Quantity of the item"""
+  quantity: Float!
+
+  """Units of the quantity"""
+  quantityUnits: String
+}
+
+type DeleteResponse {
+  """Message of the response"""
+  message: String!
+
+  """Status of the response"""
+  status: String!
+}
+
+type Query {
+  items: [Item!]!
+  item(id: ID!): Item!
+}
+
+type Mutation {
+  createItem(createItemInput: CreateItemInput!): Item!
+  updateItem(updateItemInput: UpdateItemInput!): Item!
+  removeItem(id: ID!): DeleteResponse!
+}
+
+input CreateItemInput {
+  """Name of the item"""
+  name: String!
+
+  """Quantity of the item"""
+  quantity: Float!
+
+  """Units of the quantity"""
+  quantityUnits: String
+}
+
+input UpdateItemInput {
+  """Name of the item"""
+  name: String
+
+  """Quantity of the item"""
+  quantity: Float
+
+  """Units of the quantity"""
+  quantityUnits: String
+
+  """Unique identifier of the item"""
+  id: ID!
+}
