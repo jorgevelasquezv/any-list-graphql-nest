@@ -22,7 +22,7 @@ export const CurrentUser = createParamDecorator(
       roles.length > 0 &&
       !user.roles
         .map((role) => role as ValidRoles)
-        .every((role) => roles.includes(role))
+        .some((role) => roles.includes(role))
     )
       throw new UnauthorizedException(
         `User ${user.fullName} does not have the required role(s) ${roles.join(', ')}`,

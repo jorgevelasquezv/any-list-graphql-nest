@@ -11,6 +11,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ItemsModule } from './items/items.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { JwtService } from '@nestjs/jwt';
 
 type OriginalError = {
   message?: string;
@@ -28,22 +29,45 @@ type Extensions = {
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    GraphQLModule.forRoot<ApolloDriverConfig>({
+    // GraphQLModule.forRoot<ApolloDriverConfig>({
+    //   driver: ApolloDriver,
+    //   // debug: false,
+    //   playground: false,
+    //   plugins: [ApolloServerPluginLandingPageLocalDefault()],
+    //   autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+    //   formatError: (error) => {
+    //     const message = error.message;
+    //     const extensions = error.extensions as Extensions;
+    //     return {
+    //       message,
+    //       error: extensions?.originalError,
+    //       // error: extensions?.originalError?.error,
+    //       // statusCode: extensions?.originalError?.statusCode,
+    //     };
+    //   },
+    // }),
+    // Carga asincrona del playground y el esquema de graphql con lo cual se puede validar primero el token antes de cargar el esquema
+    GraphQLModule.forRootAsync({
       driver: ApolloDriver,
-      // debug: false,
-      playground: false,
-      plugins: [ApolloServerPluginLandingPageLocalDefault()],
-      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
-      formatError: (error) => {
-        const message = error.message;
-        const extensions = error.extensions as Extensions;
-        return {
-          message,
-          error: extensions?.originalError,
-          // error: extensions?.originalError?.error,
-          // statusCode: extensions?.originalError?.statusCode,
-        };
-      },
+      imports: [AuthModule],
+      inject: [JwtService],
+      useFactory: async (jwtServices: JwtService) => ({
+        playground: false,
+        plugins: [ApolloServerPluginLandingPageLocalDefault()],
+        autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+        context: ({ req }) => {
+          const token = req.headers.authorization?.replace('Bearer ', '');
+          jwtServices.verify(token);
+        },
+        formatError: (error) => {
+          const message = error.message;
+          const extensions = error.extensions as Extensions;
+          return {
+            message,
+            error: extensions?.originalError,
+          };
+        },
+      }),
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',

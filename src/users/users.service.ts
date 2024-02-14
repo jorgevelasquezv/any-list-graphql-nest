@@ -5,14 +5,15 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 import * as bcrypt from 'bcrypt';
 
-import { UpdateUserInput } from './dto/update-user.input';
+import { UpdateUserInput } from './dto/inputs';
 import { User } from './entities/user.entity';
 import { RegisterInput } from '../auth/dto/inputs/register.input';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
+import { ValidRoles } from '../auth/enums/valid-roles.enum';
 
 @Injectable()
 export class UsersService {
@@ -35,8 +36,16 @@ export class UsersService {
     }
   }
 
-  async findAll(): Promise<User[]> {
-    return [];
+  async findAll(roles: ValidRoles[]): Promise<User[]> {
+    if (roles.length === 0)
+      return this.userRepository.find({
+        // relations: ['lastUpdateBy'], No es necesario por que se tiene la propiedad lazy en el campo lastUpdateBy
+      });
+    return this.userRepository
+      .createQueryBuilder()
+      .andWhere('ARRAY[roles] && ARRAY[:...roles]')
+      .setParameter('roles', roles)
+      .getMany();
   }
 
   async findOneByEmail(email: string): Promise<User> {
@@ -55,12 +64,32 @@ export class UsersService {
     }
   }
 
-  async update(id: string, updateUserInput: UpdateUserInput) {
-    return `This action updates a #${id} user`;
+  async update(
+    updateUserInput: UpdateUserInput,
+    adminUser: User,
+  ): Promise<User> {
+    try {
+      const { password } = updateUserInput;
+
+      if (password) updateUserInput.password = bcrypt.hashSync(password, 10);
+
+      const user = await this.userRepository.preload({
+        ...updateUserInput,
+      });
+
+      user.lastUpdateBy = adminUser;
+
+      return await this.userRepository.save(user);
+    } catch (error) {
+      this.handleBDErrors(error);
+    }
   }
 
-  async block(id: string): Promise<User> {
-    throw new Error('This action blocks a #${id} user');
+  async block(id: string, adminUser: User): Promise<User> {
+    const userToBlock = await this.findOneByID(id);
+    userToBlock.isBlocked = true;
+    userToBlock.lastUpdateBy = adminUser;
+    return this.userRepository.save(userToBlock);
   }
 
   private handleBDErrors(error: any): never {

@@ -39,6 +39,9 @@ type User {
 
   """User is blocked"""
   isBlocked: Boolean!
+
+  """User who update the record"""
+  lastUpdateBy: User
 }
 
 type AuthResponse {
@@ -50,20 +53,65 @@ type AuthResponse {
 }
 
 type Query {
+  revalidate: AuthResponse!
+  users(roles: [ValidRoles!] = []): [User!]!
+  user(id: ID!): User!
   items: [Item!]!
   item(id: ID!): Item!
-  users: [User!]!
-  user(id: ID!): User!
-  revalidate: AuthResponse!
+}
+
+"""Valid roles for users"""
+enum ValidRoles {
+  ADMIN
+  USER
+  SUPER_USER
 }
 
 type Mutation {
+  register(registerInput: RegisterInput!): AuthResponse!
+  login(loginInput: LoginInput!): AuthResponse!
+  blockUser(id: ID!): User!
+  updateUser(updateUserInput: UpdateUserInput!): User!
   createItem(createItemInput: CreateItemInput!): Item!
   updateItem(updateItemInput: UpdateItemInput!): Item!
   removeItem(id: ID!): DeleteResponse!
-  blockUser(id: ID!): User!
-  register(registerInput: RegisterInput!): AuthResponse!
-  login(loginInput: LoginInput!): AuthResponse!
+}
+
+input RegisterInput {
+  """User email"""
+  email: String!
+
+  """User full name"""
+  fullName: String!
+
+  """User password"""
+  password: String!
+}
+
+input LoginInput {
+  """User email"""
+  email: String!
+
+  """User password"""
+  password: String!
+}
+
+input UpdateUserInput {
+  """User email"""
+  email: String
+
+  """User full name"""
+  fullName: String
+
+  """User password"""
+  password: String
+  id: ID!
+
+  """User roles"""
+  roles: [ValidRoles!]
+
+  """User is blocked"""
+  isBlocked: Boolean
 }
 
 input CreateItemInput {
@@ -89,23 +137,4 @@ input UpdateItemInput {
 
   """Unique identifier of the item"""
   id: ID!
-}
-
-input RegisterInput {
-  """User email"""
-  email: String!
-
-  """User full name"""
-  fullName: String!
-
-  """User password"""
-  password: String!
-}
-
-input LoginInput {
-  """User email"""
-  email: String!
-
-  """User password"""
-  password: String!
 }
