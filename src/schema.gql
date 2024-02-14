@@ -24,15 +24,46 @@ type DeleteResponse {
   status: String!
 }
 
+type User {
+  """User ID"""
+  id: ID!
+
+  """User full name"""
+  fullName: String!
+
+  """User email"""
+  email: String!
+
+  """User roles"""
+  roles: [String!]!
+
+  """User is blocked"""
+  isBlocked: Boolean!
+}
+
+type AuthResponse {
+  """JWT token"""
+  token: String!
+
+  """User data"""
+  user: User!
+}
+
 type Query {
   items: [Item!]!
   item(id: ID!): Item!
+  users: [User!]!
+  user(id: ID!): User!
+  revalidate: AuthResponse!
 }
 
 type Mutation {
   createItem(createItemInput: CreateItemInput!): Item!
   updateItem(updateItemInput: UpdateItemInput!): Item!
   removeItem(id: ID!): DeleteResponse!
+  blockUser(id: ID!): User!
+  register(registerInput: RegisterInput!): AuthResponse!
+  login(loginInput: LoginInput!): AuthResponse!
 }
 
 input CreateItemInput {
@@ -58,4 +89,23 @@ input UpdateItemInput {
 
   """Unique identifier of the item"""
   id: ID!
+}
+
+input RegisterInput {
+  """User email"""
+  email: String!
+
+  """User full name"""
+  fullName: String!
+
+  """User password"""
+  password: String!
+}
+
+input LoginInput {
+  """User email"""
+  email: String!
+
+  """User password"""
+  password: String!
 }

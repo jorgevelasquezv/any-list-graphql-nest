@@ -9,6 +9,8 @@ import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { ItemsModule } from './items/items.module';
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
 
 type OriginalError = {
   message?: string;
@@ -37,8 +39,9 @@ type Extensions = {
         const extensions = error.extensions as Extensions;
         return {
           message,
-          error: extensions?.originalError?.error,
-          statusCode: extensions?.originalError?.statusCode,
+          error: extensions?.originalError,
+          // error: extensions?.originalError?.error,
+          // statusCode: extensions?.originalError?.statusCode,
         };
       },
     }),
@@ -53,6 +56,8 @@ type Extensions = {
       autoLoadEntities: true,
     }),
     ItemsModule,
+    UsersModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],
