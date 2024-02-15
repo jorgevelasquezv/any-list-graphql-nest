@@ -18,6 +18,7 @@ import { ValidRoles } from '../auth/enums/valid-roles.enum';
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
+
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
@@ -89,7 +90,7 @@ export class UsersService {
     const userToBlock = await this.findOneByID(id);
     userToBlock.isBlocked = true;
     userToBlock.lastUpdateBy = adminUser;
-    return this.userRepository.save(userToBlock);
+    return await this.userRepository.save(userToBlock);
   }
 
   private handleBDErrors(error: any): never {

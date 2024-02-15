@@ -51,14 +51,14 @@ type Extensions = {
       driver: ApolloDriver,
       imports: [AuthModule],
       inject: [JwtService],
-      useFactory: async (jwtServices: JwtService) => ({
+      useFactory: async (/*jwtServices: JwtService*/) => ({
         playground: false,
         plugins: [ApolloServerPluginLandingPageLocalDefault()],
         autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
-        context: ({ req }) => {
-          const token = req.headers.authorization?.replace('Bearer ', '');
-          jwtServices.verify(token);
-        },
+        // context: ({ req }) => {
+        //   const token = req.headers.authorization?.replace('Bearer ', '');
+        //   jwtServices.verify(token);
+        // },
         formatError: (error) => {
           const message = error.message;
           const extensions = error.extensions as Extensions;

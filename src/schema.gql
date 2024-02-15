@@ -2,28 +2,6 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type Item {
-  """Unique identifier of the item"""
-  id: ID!
-
-  """Name of the item"""
-  name: String!
-
-  """Quantity of the item"""
-  quantity: Float!
-
-  """Units of the quantity"""
-  quantityUnits: String
-}
-
-type DeleteResponse {
-  """Message of the response"""
-  message: String!
-
-  """Status of the response"""
-  status: String!
-}
-
 type User {
   """User ID"""
   id: ID!
@@ -42,6 +20,32 @@ type User {
 
   """User who update the record"""
   lastUpdateBy: User
+
+  """User items"""
+  items: [Item!]!
+  itemCount: Int!
+}
+
+type Item {
+  """Unique identifier of the item"""
+  id: ID!
+
+  """Name of the item"""
+  name: String!
+
+  """Units of the quantity"""
+  quantityUnits: String
+
+  """User who created the item"""
+  user: User!
+}
+
+type DeleteResponse {
+  """Message of the response"""
+  message: String!
+
+  """Status of the response"""
+  status: String!
 }
 
 type AuthResponse {
@@ -118,9 +122,6 @@ input CreateItemInput {
   """Name of the item"""
   name: String!
 
-  """Quantity of the item"""
-  quantity: Float!
-
   """Units of the quantity"""
   quantityUnits: String
 }
@@ -128,9 +129,6 @@ input CreateItemInput {
 input UpdateItemInput {
   """Name of the item"""
   name: String
-
-  """Quantity of the item"""
-  quantity: Float
 
   """Units of the quantity"""
   quantityUnits: String

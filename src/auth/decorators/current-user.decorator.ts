@@ -19,7 +19,7 @@ export const CurrentUser = createParamDecorator(
       );
 
     if (
-      roles.length > 0 &&
+      roles?.length > 0 &&
       !user.roles
         .map((role) => role as ValidRoles)
         .some((role) => roles.includes(role))
