@@ -79,6 +79,9 @@ type Mutation {
   createItem(createItemInput: CreateItemInput!): Item!
   updateItem(updateItemInput: UpdateItemInput!): Item!
   removeItem(id: ID!): DeleteResponse!
+
+  """Seed the database"""
+  seed: Boolean!
 }
 
 input RegisterInput {
