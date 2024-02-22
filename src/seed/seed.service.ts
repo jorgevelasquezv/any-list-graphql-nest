@@ -102,7 +102,7 @@ export class SeedService {
         await Promise.all(
           items.map((item) =>
             this.listItemService.create({
-              completed: Math.random() > 0.5 ? true : false,
+              completed: Math.random() > 0.5,
               itemId: item.id,
               listId: list.id,
               quantity: Math.floor(Math.random() * 10) + 1,
