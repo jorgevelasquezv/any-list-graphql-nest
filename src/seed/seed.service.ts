@@ -9,7 +9,11 @@ import { User } from '../users/entities/user.entity';
 import { ItemsService } from '../items/items.service';
 import { UsersService } from '../users/users.service';
 
-import { SEED_USERS, SEED_ITEMS } from './data/seed-data';
+import { SEED_USERS, SEED_ITEMS, SEED_LISTS } from './data/seed-data';
+import { List } from 'src/lists/entities/list.entity';
+import { ListItem } from 'src/list-item/entities/list-item.entity';
+import { ListsService } from 'src/lists/lists.service';
+import { ListItemService } from 'src/list-item/list-item.service';
 
 @Injectable()
 export class SeedService {
@@ -20,8 +24,14 @@ export class SeedService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Item)
     private readonly itemRepository: Repository<Item>,
+    @InjectRepository(List)
+    private readonly listRepository: Repository<List>,
+    @InjectRepository(ListItem)
+    private readonly listItemRepository: Repository<ListItem>,
     private readonly userService: UsersService,
     private readonly itemService: ItemsService,
+    private readonly listService: ListsService,
+    private readonly listItemService: ListItemService,
   ) {
     this.isProduction = this.configServices.get('STATE') === 'prod';
   }
@@ -36,10 +46,18 @@ export class SeedService {
 
     await this.loadItems(users);
 
+    const lists = await this.loadLists(users);
+
+    await this.loadListItems(lists, users);
+
     return true;
   }
 
   private async deleteDataBase() {
+    await this.listItemRepository.delete({});
+
+    await this.listRepository.delete({});
+
     await this.itemRepository.delete({});
 
     await this.userRepository.delete({});
@@ -59,6 +77,39 @@ export class SeedService {
       await Promise.all(
         SEED_ITEMS.map((item) => this.itemService.create(item, user)),
       );
+    }
+  }
+
+  private async loadLists(users: User[]): Promise<List[]> {
+    const Lists: List[] = [];
+    for (const user of users) {
+      for (const list of SEED_LISTS) {
+        const newList: List = await this.listService.create(list, user);
+        Lists.push(newList);
+      }
+    }
+    return Lists;
+  }
+
+  private async loadListItems(lists: List[], users: User[]): Promise<void> {
+    for (const user of users) {
+      const items = await this.itemService.findAll(
+        user,
+        { limit: 10, offset: 0 },
+        {},
+      );
+      for (const list of lists) {
+        await Promise.all(
+          items.map((item) =>
+            this.listItemService.create({
+              completed: Math.random() > 0.5 ? true : false,
+              itemId: item.id,
+              listId: list.id,
+              quantity: Math.floor(Math.random() * 10) + 1,
+            }),
+          ),
+        );
+      }
     }
   }
 }

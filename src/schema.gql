@@ -20,10 +20,67 @@ type User {
 
   """User who update the record"""
   lastUpdateBy: User
-
-  """User items"""
-  items: [Item!]!
   itemCount: Int!
+  items(
+    """Limit of items"""
+    limit: Int! = 10
+
+    """Offset of items"""
+    offset: Int! = 0
+
+    """Search term"""
+    search: String
+  ): [Item!]!
+  listCount: Int!
+  lists(
+    """Limit of items"""
+    limit: Int! = 10
+
+    """Offset of items"""
+    offset: Int! = 0
+
+    """Search term"""
+    search: String
+  ): [List!]!
+}
+
+type List {
+  """Unique identifier of the list"""
+  id: ID!
+
+  """Name of the list"""
+  name: String!
+
+  """User who created the list"""
+  user: User!
+  items(
+    """Limit of items"""
+    limit: Int! = 10
+
+    """Offset of items"""
+    offset: Int! = 0
+
+    """Search term"""
+    search: String
+  ): [ListItem!]!
+  totalItems: Float!
+}
+
+type ListItem {
+  """Unique identifier of the list item"""
+  id: ID!
+
+  """Quantity of the item"""
+  quantity: Float!
+
+  """Item is completed"""
+  completed: Boolean!
+
+  """List"""
+  list: List!
+
+  """Items"""
+  item: Item!
 }
 
 type Item {
@@ -38,6 +95,9 @@ type Item {
 
   """User who created the item"""
   user: User!
+
+  """List items"""
+  listItems: [ListItem!]!
 }
 
 type DeleteResponse {
@@ -58,10 +118,42 @@ type AuthResponse {
 
 type Query {
   revalidate: AuthResponse!
-  users(roles: [ValidRoles!] = []): [User!]!
+  users(
+    roles: [ValidRoles!] = []
+
+    """Limit of items"""
+    limit: Int! = 10
+
+    """Offset of items"""
+    offset: Int! = 0
+
+    """Search term"""
+    search: String
+  ): [User!]!
   user(id: ID!): User!
-  items: [Item!]!
+  items(
+    """Limit of items"""
+    limit: Int! = 10
+
+    """Offset of items"""
+    offset: Int! = 0
+
+    """Search term"""
+    search: String
+  ): [Item!]!
   item(id: ID!): Item!
+  lists(
+    """Limit of items"""
+    limit: Int! = 10
+
+    """Offset of items"""
+    offset: Int! = 0
+
+    """Search term"""
+    search: String
+  ): [List!]!
+  list(id: ID!): List!
+  listItem(id: ID!): ListItem!
 }
 
 """Valid roles for users"""
@@ -79,6 +171,12 @@ type Mutation {
   createItem(createItemInput: CreateItemInput!): Item!
   updateItem(updateItemInput: UpdateItemInput!): Item!
   removeItem(id: ID!): DeleteResponse!
+  createList(createListInput: CreateListInput!): List!
+  updateList(updateListInput: UpdateListInput!): List!
+  removeList(id: ID!): List!
+  createListItem(createListItemInput: CreateListItemInput!): ListItem!
+  updateListItem(updateListItemInput: UpdateListItemInput!): ListItem!
+  removeListItem(id: ID!): ListItem!
 
   """Seed the database"""
   seed: Boolean!
@@ -137,5 +235,45 @@ input UpdateItemInput {
   quantityUnits: String
 
   """Unique identifier of the item"""
+  id: ID!
+}
+
+input CreateListInput {
+  """Name of the list"""
+  name: String!
+}
+
+input UpdateListInput {
+  """Name of the list"""
+  name: String
+  id: ID!
+}
+
+input CreateListItemInput {
+  """Quantity of the item"""
+  quantity: Int = 0
+
+  """Item is completed"""
+  completed: Boolean = false
+
+  """Item ID"""
+  itemId: ID!
+
+  """List ID"""
+  listId: ID!
+}
+
+input UpdateListItemInput {
+  """Quantity of the item"""
+  quantity: Int = 0
+
+  """Item is completed"""
+  completed: Boolean = false
+
+  """Item ID"""
+  itemId: ID
+
+  """List ID"""
+  listId: ID
   id: ID!
 }

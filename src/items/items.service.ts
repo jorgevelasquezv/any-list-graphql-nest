@@ -9,6 +9,7 @@ import { Repository } from 'typeorm';
 import { Item, DeleteResponse } from './entities';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../users/entities/user.entity';
+import { SearchArgs, PaginationArgs } from '../common/dto/args';
 
 @Injectable()
 export class ItemsService {
@@ -33,8 +34,32 @@ export class ItemsService {
     }
   }
 
-  findAll(user: User): Promise<Item[]> {
-    return this.itemRepository.find({ where: { user } });
+  findAll(
+    user: User,
+    paginationArgs: PaginationArgs,
+    searchArgs: SearchArgs,
+  ): Promise<Item[]> {
+    const { limit, offset } = paginationArgs;
+    const { search } = searchArgs;
+
+    const queryBuilder = this.itemRepository
+      .createQueryBuilder()
+      .take(limit)
+      .skip(offset)
+      .where('"userId" = :userId', { userId: user.id });
+
+    if (search)
+      queryBuilder.andWhere('LOWER(name) LIKE :search', {
+        search: `%${search.toLowerCase()}%`,
+      });
+
+    return queryBuilder.getMany();
+
+    // return this.itemRepository.find({
+    //   take: limit,
+    //   skip: offset,
+    //   where: { user, name: Like(`%${search}%`) },
+    // });
   }
 
   async findOne(id: string, user: User): Promise<Item> {

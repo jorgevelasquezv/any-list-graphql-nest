@@ -3,7 +3,7 @@ import { join } from 'path';
 import { Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ConfigModule } from '@nestjs/config';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { ApolloDriver } from '@nestjs/apollo';
 
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -13,6 +13,9 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtService } from '@nestjs/jwt';
 import { SeedModule } from './seed/seed.module';
+import { CommonModule } from './common/common.module';
+import { ListsModule } from './lists/lists.module';
+import { ListItemModule } from './list-item/list-item.module';
 
 type OriginalError = {
   message?: string;
@@ -72,6 +75,7 @@ type Extensions = {
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
+      ssl: process.env.STATE === 'prod' ? { rejectUnauthorized: false } : false,
       host: process.env.DB_HOST,
       port: +process.env.DB_PORT,
       username: process.env.DB_USERNAME,
@@ -84,6 +88,9 @@ type Extensions = {
     UsersModule,
     AuthModule,
     SeedModule,
+    CommonModule,
+    ListsModule,
+    ListItemModule,
   ],
   controllers: [],
   providers: [],

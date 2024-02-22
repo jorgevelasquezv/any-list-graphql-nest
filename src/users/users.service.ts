@@ -14,6 +14,7 @@ import { UpdateUserInput } from './dto/inputs';
 import { User } from './entities/user.entity';
 import { RegisterInput } from '../auth/dto/inputs/register.input';
 import { ValidRoles } from '../auth/enums/valid-roles.enum';
+import { PaginationArgs, SearchArgs } from 'src/common/dto/args';
 
 @Injectable()
 export class UsersService {
@@ -37,16 +38,35 @@ export class UsersService {
     }
   }
 
-  async findAll(roles: ValidRoles[]): Promise<User[]> {
-    if (roles.length === 0)
-      return this.userRepository.find({
-        // relations: ['lastUpdateBy'], No es necesario por que se tiene la propiedad lazy en el campo lastUpdateBy
-      });
-    return this.userRepository
+  async findAll(
+    roles: ValidRoles[],
+    paginationArgs: PaginationArgs,
+    searchArgs: SearchArgs,
+  ): Promise<User[]> {
+    const { limit, offset } = paginationArgs;
+    const { search } = searchArgs;
+
+    const queryBuilder = this.userRepository
       .createQueryBuilder()
-      .andWhere('ARRAY[roles] && ARRAY[:...roles]')
-      .setParameter('roles', roles)
-      .getMany();
+      .take(limit)
+      .skip(offset);
+
+    if (roles.length > 0)
+      // return this.userRepository.find({
+      //   // relations: ['lastUpdateBy'], No es necesario por que se tiene la propiedad lazy en el campo lastUpdateBy
+      //   take: limit,
+      //   skip: offset,
+      // });
+      queryBuilder
+        .where('ARRAY[roles] && ARRAY[:...roles]')
+        .setParameter('roles', roles);
+
+    if (search)
+      queryBuilder.andWhere('LOWER(full_name) LIKE :search', {
+        search: `%${search.toLocaleLowerCase()}%`,
+      });
+
+    return queryBuilder.getMany();
   }
 
   async findOneByEmail(email: string): Promise<User> {
